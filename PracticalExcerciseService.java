@@ -1,11 +1,16 @@
 package com.example.PracticalExcercise;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.*;
 import java.lang.reflect.Array;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,11 +23,14 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class PracticalExcerciseService {
     ArrayList<People> peoplelist = new ArrayList<>();
+    ArrayList<InjuryReports> reportsList = new ArrayList<>();
     ArrayList<String> validations = new ArrayList<>();
+    ArrayList<String> validationsxlsx = new ArrayList<>();
     List<String> jobs = Arrays.asList("Haematologist", "Phytotherapist", "Building surveyor", "Insurance account manager", "Educational psychologist");
     List<String> reportType = Arrays.asList("Near Miss", "Lost Time", "First Aid");
 
@@ -32,14 +40,18 @@ public class PracticalExcerciseService {
         return this.peoplelist;
     }
 
-    public String uploadCSVList(){
-        String file = "C:\\Users\\danie\\OneDrive\\Documentos\\Bootcamp Makaia\\Spring\\PracticalExcercise\\src\\main\\resources\\people.csv";
+    public ArrayList<InjuryReports> printReportsList(){
+        return this.reportsList;
+    }
+
+    public String uploadCSVList(String url){
+        String fileToRead = url;
         String delimiter = ",";
         String headers;
         String line;
         int validLines = 0;
         int invalidLines = 0;
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(fileToRead))) {
             headers = br.readLine();
             while((line = br.readLine()) != null){
                 boolean generalValidation = false;
@@ -95,32 +107,42 @@ public class PracticalExcerciseService {
         +"\nTotal of invalid lines: "+ invalidLines);
     }
 
-    public String uploadxlsxList() throws IOException {
+    public String uploadxlsxList(String url) throws IOException {
+        int validLinesxlsx = 0;
+        int invalidLinesxlsx = 0;
+        int index = 1;
         try
         {
-            File file = new File("C:\\Users\\danie\\OneDrive\\Documentos\\Bootcamp Makaia\\Spring\\PracticalExcercise\\src\\main\\resources\\sampledatasafety 2.xlsx");   //creating a new file instance
-            FileInputStream fis = new FileInputStream(file);   //obtaining bytes from the file
+
+            File fileToRead = new File(url);   //creating a new file instance
+            FileInputStream fis = new FileInputStream(fileToRead);   //obtaining bytes from the file
             //creating Workbook instance that refers to .xlsx file
             XSSFWorkbook wb = new XSSFWorkbook(fis);
             XSSFSheet sheet = wb.getSheetAt(0);     //creating a Sheet object to retrieve object
             Iterator<Row> itr = sheet.iterator();    //iterating over excel file
             while (itr.hasNext())
             {
+                boolean generalValidationxslx = false;
                 Row row = itr.next();
                 Iterator<Cell> cellIterator = row.cellIterator();   //iterating over each column
+                boolean ILValidation = false;
+                boolean RPValidation = false;
+                ArrayList<String> tempArray = new ArrayList<>();
                 while (cellIterator.hasNext())
                 {
+
+
+
                     Cell cell = cellIterator.next();
-                    System.out.println("\n"+cell.getRowIndex()+","+cell.getColumnIndex());
+
 
                     //Injury location validation
-                    boolean ILValidation = true;
-                    if(cell.getColumnIndex()==1 && cell.getStringCellValue().equals("N/A")){
+                    if(cell.getColumnIndex()==1 && !cell.getStringCellValue().equals("N/A")){
                         ILValidation = true;
                     }
 
+
                     //Report type validation
-                    boolean RPValidation = true;
                     if(cell.getColumnIndex()==7){
                         for(int i = 0; i < reportType.size();i++){
                             if (cell.getStringCellValue().equals(reportType.get(i))){
@@ -128,34 +150,55 @@ public class PracticalExcerciseService {
                             }
                             }
                     }
-
-                    if(ILValidation == true && RPValidation == true){
                         switch (cell.getCellType())
                         {
                             case STRING:    //field that represents string cell type
-                                System.out.print(cell.getStringCellValue());
+                                //System.out.print(cell.getStringCellValue());
                                 //System.out.print(cell.getStringCellValue() + "\t\t\t");
-
+                                tempArray.add(cell.getStringCellValue());
                                 break;
                             case NUMERIC:    //field that represents number cell type
-                                System.out.print(cell.getNumericCellValue());
+                                //System.out.print(cell.getNumericCellValue());
                                 //System.out.print(cell.getNumericCellValue() + "\t\t\t");
+                                tempArray.add(String.valueOf(cell.getNumericCellValue()));
                                 break;
                             default:
                         }
-                    }
-
-
 
                 }
-                System.out.println("");
+                if(ILValidation == true && RPValidation == true) {
+                    System.out.println(tempArray);
+                    InjuryReports newReport = new InjuryReports(
+                            LocalDate
+                                    .of( 1899 , Month.DECEMBER , 30 ).plusDays((long) Double.parseDouble(tempArray.get(0)))
+                                    .toString(),
+                            tempArray.get(1),
+                            tempArray.get(2),
+                            tempArray.get(3),
+                            tempArray.get(4),
+                            tempArray.get(5),
+                            tempArray.get(6),
+                            tempArray.get(7),
+                            tempArray.get(8),
+                            tempArray.get(9),
+                            tempArray.get(10));
+                    reportsList.add(newReport);
+                    validLinesxlsx++;
+                    generalValidationxslx = true;
+                }else{
+                    invalidLinesxlsx++;
+                }
+                validationsxlsx.add(String.valueOf(index)+String.valueOf(generalValidationxslx));
+                index++;
             }
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
-        return "test";
+        return (validationsxlsx+
+                "\n\nTotal of valid lines: "+ validLinesxlsx
+                +"\nTotal of invalid lines: "+ invalidLinesxlsx);
     }
 }
 

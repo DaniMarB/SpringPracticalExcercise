@@ -21,12 +21,12 @@ public class PracticalExcerciseController {
         return this.service.printPeopleList();
     }
     @PostMapping("/CSV")
-    public String uploadCSVList(){
-        return this.service.uploadCSVList();
+    public String uploadCSVList(@RequestBody()String url){
+        return this.service.uploadCSVList(url);
     }
 
     @PostMapping("/EXCEL")
-    public String uploadxlsxList() throws IOException {
-        return this.service.uploadxlsxList();
+    public String uploadxlsxList(@RequestBody() String url) throws IOException {
+        return this.service.uploadxlsxList(url);
     }
 }
