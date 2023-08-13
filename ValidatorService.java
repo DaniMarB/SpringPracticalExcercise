@@ -1,21 +1,13 @@
 package com.example.PracticalExcercise;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.text.ParseException;
-import java.util.stream.Collectors;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Iterator;
@@ -23,10 +15,10 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class PracticalExcerciseService {
+public class ValidatorService {
+
     ArrayList<People> peoplelist = new ArrayList<>();
     ArrayList<InjuryReports> reportsList = new ArrayList<>();
     ArrayList<String> validations = new ArrayList<>();
@@ -40,9 +32,6 @@ public class PracticalExcerciseService {
         return this.peoplelist;
     }
 
-    public ArrayList<InjuryReports> printReportsList(){
-        return this.reportsList;
-    }
 
     public String uploadCSVList(String url){
         String fileToRead = url;
@@ -91,7 +80,6 @@ public class PracticalExcerciseService {
                             Arrays.asList(line.split(delimiter)).get(6),
                             Arrays.asList(line.split(delimiter)).get(7),
                             Arrays.asList(line.split(delimiter)).get(8));
-                    //List<String> values = Arrays.asList(line.split(delimiter));
                     peoplelist.add(nPerson);
                     validLines++;
                     generalValidation = true;
@@ -114,33 +102,28 @@ public class PracticalExcerciseService {
         try
         {
 
-            File fileToRead = new File(url);   //creating a new file instance
-            FileInputStream fis = new FileInputStream(fileToRead);   //obtaining bytes from the file
-            //creating Workbook instance that refers to .xlsx file
+            File fileToRead = new File(url);
+            FileInputStream fis = new FileInputStream(fileToRead);
+
             XSSFWorkbook wb = new XSSFWorkbook(fis);
-            XSSFSheet sheet = wb.getSheetAt(0);     //creating a Sheet object to retrieve object
-            Iterator<Row> itr = sheet.iterator();    //iterating over excel file
+            XSSFSheet sheet = wb.getSheetAt(0);
+            Iterator<Row> itr = sheet.iterator();
             while (itr.hasNext())
             {
                 boolean generalValidationxslx = false;
                 Row row = itr.next();
-                Iterator<Cell> cellIterator = row.cellIterator();   //iterating over each column
+                Iterator<Cell> cellIterator = row.cellIterator();
                 boolean ILValidation = false;
                 boolean RPValidation = false;
                 ArrayList<String> tempArray = new ArrayList<>();
                 while (cellIterator.hasNext())
                 {
-
-
-
                     Cell cell = cellIterator.next();
-
 
                     //Injury location validation
                     if(cell.getColumnIndex()==1 && !cell.getStringCellValue().equals("N/A")){
                         ILValidation = true;
                     }
-
 
                     //Report type validation
                     if(cell.getColumnIndex()==7){
@@ -153,13 +136,9 @@ public class PracticalExcerciseService {
                         switch (cell.getCellType())
                         {
                             case STRING:    //field that represents string cell type
-                                //System.out.print(cell.getStringCellValue());
-                                //System.out.print(cell.getStringCellValue() + "\t\t\t");
                                 tempArray.add(cell.getStringCellValue());
                                 break;
                             case NUMERIC:    //field that represents number cell type
-                                //System.out.print(cell.getNumericCellValue());
-                                //System.out.print(cell.getNumericCellValue() + "\t\t\t");
                                 tempArray.add(String.valueOf(cell.getNumericCellValue()));
                                 break;
                             default:
@@ -188,7 +167,7 @@ public class PracticalExcerciseService {
                 }else{
                     invalidLinesxlsx++;
                 }
-                validationsxlsx.add(String.valueOf(index)+String.valueOf(generalValidationxslx));
+                validationsxlsx.add(String.valueOf(index)+" "+String.valueOf(generalValidationxslx));
                 index++;
             }
         }
