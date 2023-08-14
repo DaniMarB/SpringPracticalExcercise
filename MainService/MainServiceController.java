@@ -22,10 +22,8 @@ public class MainServiceController {
             fe = fileName.substring(i+1);
         }
 
-        System.out.println(fe);
 
         if( fe.equals("csv")){
-            System.out.println("prueba");
             String urls = "http://localhost:8080/api/v1/pe/CSV";
             response =  restTemplate.postForEntity(urls,url, String.class).getBody();
         }else if(fe.equals("xlsx")){
