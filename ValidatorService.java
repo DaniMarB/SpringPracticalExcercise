@@ -90,6 +90,7 @@ public class ValidatorService {
             }
         } catch (Exception e){
         }
+
         return (validations+
                 "\n\nTotal of valid lines: "+ validLines
         +"\nTotal of invalid lines: "+ invalidLines);
@@ -146,7 +147,6 @@ public class ValidatorService {
 
                 }
                 if(ILValidation == true && RPValidation == true) {
-                    System.out.println(tempArray);
                     InjuryReports newReport = new InjuryReports(
                             LocalDate
                                     .of( 1899 , Month.DECEMBER , 30 ).plusDays((long) Double.parseDouble(tempArray.get(0)))
