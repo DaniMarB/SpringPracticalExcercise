@@ -146,7 +146,6 @@ public class ValidatorService {
 
                 }
                 if(ILValidation == true && RPValidation == true) {
-                    System.out.println(tempArray);
                     InjuryReports newReport = new InjuryReports(
                             LocalDate
                                     .of( 1899 , Month.DECEMBER , 30 ).plusDays((long) Double.parseDouble(tempArray.get(0)))
